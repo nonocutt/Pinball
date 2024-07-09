@@ -5057,7 +5057,7 @@ MonoBehaviour:
   _rightFlipper: {fileID: 1816040315}
   leftFlipperMaxAngle: 30
   rightFlipperMaxAngle: -30
-  flipperSpeed: 20000
+  flipperSpeed: 2500
 --- !u!1 &1257942566
 GameObject:
   m_ObjectHideFlags: 0
