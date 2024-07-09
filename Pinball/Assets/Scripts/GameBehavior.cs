@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,7 +14,7 @@ public class GameBehavior : MonoBehaviour
         Pause // 1
     }
 
-    public StateMachine State;
+    public StateMachine State { get; private set; }
 
     [SerializeField] private TextMeshProUGUI _pauseGUI;
     [SerializeField] private TextMeshProUGUI _gameoverGUI;
@@ -24,15 +23,39 @@ public class GameBehavior : MonoBehaviour
     [SerializeField] private int startingLives = 3;
     [SerializeField] private int maxLives = 9;
     [SerializeField] private int bonus = 5000;
-    [SerializeField] private float lifeLossProtectionDuration = 10.0f;
     [SerializeField] private AudioClip _loselife;
     [SerializeField] private AudioClip _gameover;
     [SerializeField] private AudioClip _pause;
     [SerializeField] private AudioClip _newlife;
 
-    private int currentLives;
-    private int score = 0;
-    private int nextLifeThreshold;
+    private int _currentLives;
+    private int _score = 0;
+    private int _nextLifeThreshold;
+
+    public int CurrentLives
+    {
+        get => _currentLives;
+        private set
+        {
+            _currentLives = value;
+            UpdateLifeUI();
+            if (_currentLives <= 0 && State != StateMachine.Pause)
+            {
+                GameOver();
+            }
+        }
+    }
+
+    public int Score
+    {
+        get => _score;
+        private set
+        {
+            _score = value;
+            UpdateScoreText();
+            CheckForExtraLife();
+        }
+    }
 
     private void Awake()
     {
@@ -52,18 +75,16 @@ public class GameBehavior : MonoBehaviour
     private void Start()
     {
         ResetGame();
-        UpdateScoreText();
     }
 
-    void ResetGame()
+    private void ResetGame()
     {
-        score = 0; // Reset score for player
-        nextLifeThreshold = bonus; // Reset the next life threshold
+        Score = 0;
+        _nextLifeThreshold = bonus;
         State = StateMachine.Play;
         _pauseGUI.enabled = false;
         _gameoverGUI.enabled = false;
-        currentLives = startingLives;
-        UpdateLifeUI();
+        CurrentLives = startingLives;
     }
 
     private void Update()
@@ -78,11 +99,6 @@ public class GameBehavior : MonoBehaviour
             SceneManager.LoadScene("TitleScreen");
         }
 
-        if (currentLives <= 0 && State != StateMachine.Pause)
-        {
-            GameOver();
-        }
-
         if (State == StateMachine.Pause && _gameoverGUI.enabled && Input.GetKeyDown(KeyCode.Space))
         {
             ResetGame();
@@ -92,13 +108,7 @@ public class GameBehavior : MonoBehaviour
     public void LoseLife()
     {
         PlaySound(_loselife);
-        currentLives--;
-        UpdateLifeUI();
-
-        if (currentLives <= 0)
-        {
-            GameOver();
-        }
+        CurrentLives--;
     }
 
     private void TogglePause()
@@ -119,32 +129,32 @@ public class GameBehavior : MonoBehaviour
 
     private void UpdateLifeUI()
     {
-        _livesGUI.text = "LIFE: " + currentLives;
+        _livesGUI.text = "LIFE: " + _currentLives;
+    }
+
+    private void CheckForExtraLife()
+    {
+        while (_score >= _nextLifeThreshold)
+        {
+            if (CurrentLives < maxLives)
+            {
+                CurrentLives++;
+                PlaySound(_newlife);
+            }
+            _nextLifeThreshold += bonus;
+        }
     }
 
     public void AddScore(int amount)
     {
-        score += amount;
-        UpdateScoreText();
-
-        // Check if score reached the next threshold for an extra life
-        while (score >= nextLifeThreshold)
-        {
-            if (currentLives < maxLives)
-            {
-                currentLives++;
-                UpdateLifeUI();
-            }
-            PlaySound(_newlife);
-            nextLifeThreshold += bonus; // Increment the threshold for the next life
-        }
+        Score += amount;
     }
 
-    // Method to update the TextMeshPro Text with the current score
     private void UpdateScoreText()
     {
-        _scoreGUI.text = "PLAYER\n" + score;
+        _scoreGUI.text = "PLAYER\n" + _score;
     }
+
     private void PlaySound(AudioClip clip)
     {
         _source.clip = clip;
