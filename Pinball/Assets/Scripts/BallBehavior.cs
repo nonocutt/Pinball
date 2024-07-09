@@ -1,59 +1,136 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[RequireComponent(typeof(AudioSource))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class BallBehavior : MonoBehaviour
 {
-    [Header("Gameplay Settings")]
-    [SerializeField] private float _speed = 5f; // Default speed value for the ball
-    [SerializeField] private float bounceForce = 1f; // Bounce force to maintain the current speed
-    private Vector2 _direction; // Direction vector for ball movement
-    private Rigidbody2D _rb; // Reference to the Rigidbody2D component
+    public static BallBehavior Instance;
+    
+    private Rigidbody2D rb;
+    [SerializeField] private float _yLimit = 8.0f;
+    private Vector3 initialPosition;
+    private CoinBehavior[] coins;
+    
+    private AudioSource _source;
+    [Space(4)]
+    [Header("Audio")]
+    [SerializeField] private AudioClip _wallhit;
+    [SerializeField] private AudioClip _flipperhit;
+    [SerializeField] private AudioClip _bumperhit;
+    [SerializeField] private AudioClip _tunnel;
+    [SerializeField] private AudioClip _launch;
+    [SerializeField] private AudioClip _coin;
+    [SerializeField] private AudioClip _500;
 
-    void Start()
+    private void Awake()
     {
-        _rb = GetComponent<Rigidbody2D>();
-        _rb.velocity = new Vector2(1, 1);
-        ResetBall(); // Initialize the ball position and movement
+        rb = GetComponent<Rigidbody2D>();
+        _source = GetComponent<AudioSource>();
+
+        // Ensure the Rigidbody2D's material is set to a bouncy material
+        var collider = GetComponent<Collider2D>();
+        if (collider != null && collider.sharedMaterial == null)
+        {
+            Debug.LogWarning("No Physics Material assigned to the Collider2D. Please assign a bouncy material.");
+        }
+
+        // Save the initial position for resetting the ball
+        initialPosition = transform.position;
+        // Find all coin instances in the scene
+        coins = FindObjectsOfType<CoinBehavior>();
     }
 
-    void Update()
+    private void Start()
     {
-        // Check if the game is in the "Play" state
-        if (GameBehavior.Instance.State == GameBehavior.StateMachine.Play)
+        ResetBall();
+    }
+
+    private void FixedUpdate()
+    {
+        // Check if the game is in the play state
+        if (GameBehavior.Instance.State == GameBehavior.StateMachine.Pause)
         {
-            _rb.velocity = _rb.velocity.normalized * _speed; // Maintain the ball's speed
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0;
+        }
+        else
+        {
+            rb.gravityScale = 1.2f; // Set to a suitable gravity scale for your game
+        }
+
+        // Check if the ball exceeds the y-axis limit
+        if (Mathf.Abs(transform.position.y) > _yLimit)
+        {
+            GameBehavior.Instance.LoseLife();
+            ResetBall();
         }
     }
 
-    void ResetBall()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        transform.position = Vector3.zero; // Reset the ball position to the center
-
-        // Randomize initial direction and normalize it
-        _direction = new Vector2(
-            Random.value > 0.5f ? 1 : -1, // Randomize x direction (left or right)
-            Random.value > 0.5f ? 1 : -1  // Randomize y direction (up or down)
-        ).normalized; // Normalize the direction vector
-
-        // Apply initial velocity to the ball
-        _rb.velocity = _direction * _speed;
+        switch (collision.gameObject.tag)
+        {
+            case "Bumper":
+                PlaySound(_bumperhit);
+                GameBehavior.Instance.AddScore(100);
+                break;
+            case "Wall":
+                PlaySound(_wallhit);
+                break;
+            case "Flipper":
+                PlaySound(_flipperhit);
+                break;
+        }
+        
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        // Check if the collided object is tagged as "Wall"
-        if (collision.gameObject.CompareTag("Wall"))
+        switch (other.gameObject.tag)
         {
-            // Get the normal of the collision
-            Vector2 normal = collision.contacts[0].normal;
-            // Reflect the current velocity based on the collision normal
-            Vector2 newVelocity = Vector2.Reflect(_rb.velocity, normal);
-            // Apply the new velocity to the Rigidbody2D component
-            _rb.velocity = newVelocity;
-            Debug.Log("Wall hit");
+            case "200":
+                PlaySound(_tunnel);
+                GameBehavior.Instance.AddScore(200);
+                break;
+            case "300":
+                PlaySound(_tunnel);
+                GameBehavior.Instance.AddScore(300);
+                break;
+            case "500":
+                PlaySound(_500);
+                GameBehavior.Instance.AddScore(500);
+                break;
+            case "StartWall":
+                PlaySound(_launch);
+                break;
+            case "Coin":
+                PlaySound(_coin);
+                break;
         }
+    }
+
+    public void ResetBall()
+    {
+        transform.position = initialPosition;
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 1.2f;
+        RespawnAllCoins();
+    }
+    
+    void RespawnAllCoins()
+    {
+        foreach (var coin in coins)
+        {
+            coin.gameObject.SetActive(true); // Reactivate each coin
+            StopCoroutine(coin.RespawnCoin()); // Stop the respawn coroutine if it's running
+        }
+    }
+    private void PlaySound(AudioClip clip)
+    {
+        _source.pitch = Random.Range(0.9f, 1.1f);
+        _source.clip = clip;
+        _source.PlayOneShot(clip);
     }
 }

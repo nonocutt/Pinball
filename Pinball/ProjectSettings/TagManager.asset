@@ -4,9 +4,15 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Flipper
   - Wall
-  - Bump
+  - Flipper
+  - Bumper
+  - OneWayWall
+  - 200
+  - 300
+  - 500
+  - Coin
+  - StartWall
   layers:
   - Default
   - TransparentFX

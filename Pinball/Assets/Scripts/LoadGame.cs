@@ -12,7 +12,7 @@ public class LoadGame : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Return))
         {
             // LOAD SCENE HERE
-            SceneManager.LoadScene("Pong");
+            SceneManager.LoadScene("Pinball");
         }
     }
 }

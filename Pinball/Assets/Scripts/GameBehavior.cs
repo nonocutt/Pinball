@@ -1,67 +1,153 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(AudioSource))]
 public class GameBehavior : MonoBehaviour
 {
     public static GameBehavior Instance;
-    // `static` ensures that there is only of something
 
+    private AudioSource _source;
     public enum StateMachine
     {
-        Play,   // 0
-        Pause   // 1
+        Play, // 0
+        Pause // 1
     }
 
     public StateMachine State;
 
-
     [SerializeField] private TextMeshProUGUI _pauseGUI;
-    
-    public Player[] Players = new Player[2];
+    [SerializeField] private TextMeshProUGUI _gameoverGUI;
+    [SerializeField] private TextMeshProUGUI _livesGUI;
+    [SerializeField] private TextMeshProUGUI _scoreGUI;
+    [SerializeField] private int startingLives = 3;
+    [SerializeField] private int maxLives = 9;
+    [SerializeField] private int bonus = 5000;
+    [SerializeField] private float lifeLossProtectionDuration = 10.0f;
+    [SerializeField] private AudioClip _loselife;
+    [SerializeField] private AudioClip _gameover;
+    [SerializeField] private AudioClip _pause;
+    [SerializeField] private AudioClip _newlife;
 
-    [Header("1UP")]
-    [SerializeField] int ScoreGoal = 10000;
-    
+    private int currentLives;
+    private int score = 0;
+    private int nextLifeThreshold;
+
     private void Awake()
     {
-        // Singleton Pattern
-        if (Instance != null && Instance != this)   // if exist
+        _source = GetComponent<AudioSource>();
+        // Implement singleton pattern
+        if (Instance == null)
         {
-            Destroy(this);
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Instance = this;
+            Destroy(gameObject);
         }
     }
 
     private void Start()
     {
         ResetGame();
+        UpdateScoreText();
     }
 
     void ResetGame()
     {
-        foreach (Player p in Players)       // temporary placeholder
+        score = 0; // Reset score for player
+        nextLifeThreshold = bonus; // Reset the next life threshold
+        State = StateMachine.Play;
+        _pauseGUI.enabled = false;
+        _gameoverGUI.enabled = false;
+        currentLives = startingLives;
+        UpdateLifeUI();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
         {
-            p.Score = 0;
+            TogglePause();
         }
 
-        State = StateMachine.Play;
+        if (Input.GetKeyUp(KeyCode.Escape))
+        {
+            SceneManager.LoadScene("TitleScreen");
+        }
+
+        if (currentLives <= 0 && State != StateMachine.Pause)
+        {
+            GameOver();
+        }
+
+        if (State == StateMachine.Pause && _gameoverGUI.enabled && Input.GetKeyDown(KeyCode.Space))
+        {
+            ResetGame();
+        }
     }
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.P)) {
-            State = State == StateMachine.Play ? StateMachine.Pause : StateMachine.Play;
-            _pauseGUI.enabled = !_pauseGUI.enabled;     // flipping the boolean
+
+    public void LoseLife()
+    {
+        PlaySound(_loselife);
+        currentLives--;
+        UpdateLifeUI();
+
+        if (currentLives <= 0)
+        {
+            GameOver();
         }
-        
-        if (Input.GetKeyUp(KeyCode.Escape)) {
-                SceneManager.LoadScene("TitleScreen");
+    }
+
+    private void TogglePause()
+    {
+        State = State == StateMachine.Play ? StateMachine.Pause : StateMachine.Play;
+        PlaySound(_pause);
+        _pauseGUI.enabled = !_pauseGUI.enabled; // flipping the boolean
+        Time.timeScale = State == StateMachine.Pause ? 0 : 1; // Pause or resume time
+    }
+
+    private void GameOver()
+    {
+        PlaySound(_gameover);
+        State = StateMachine.Pause;
+        _gameoverGUI.enabled = true;
+        _pauseGUI.enabled = false;
+    }
+
+    private void UpdateLifeUI()
+    {
+        _livesGUI.text = "LIFE: " + currentLives;
+    }
+
+    public void AddScore(int amount)
+    {
+        score += amount;
+        UpdateScoreText();
+
+        // Check if score reached the next threshold for an extra life
+        while (score >= nextLifeThreshold)
+        {
+            if (currentLives < maxLives)
+            {
+                currentLives++;
+                UpdateLifeUI();
+            }
+            PlaySound(_newlife);
+            nextLifeThreshold += bonus; // Increment the threshold for the next life
         }
-        
+    }
+
+    // Method to update the TextMeshPro Text with the current score
+    private void UpdateScoreText()
+    {
+        _scoreGUI.text = "PLAYER\n" + score;
+    }
+    private void PlaySound(AudioClip clip)
+    {
+        _source.clip = clip;
+        _source.Play();
     }
 }
