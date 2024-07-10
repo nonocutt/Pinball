@@ -27,6 +27,7 @@ public class GameBehavior : MonoBehaviour
     [SerializeField] private AudioClip _gameover;
     [SerializeField] private AudioClip _pause;
     [SerializeField] private AudioClip _newlife;
+    [SerializeField] private AudioClip _start;
 
     private int _currentLives;
     private int _score = 0;
@@ -64,7 +65,6 @@ public class GameBehavior : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -85,13 +85,21 @@ public class GameBehavior : MonoBehaviour
         _pauseGUI.enabled = false;
         _gameoverGUI.enabled = false;
         CurrentLives = startingLives;
+        PlaySound(_start);
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
-            TogglePause();
+            if (_gameoverGUI.enabled)
+            {
+                PlaySound(_gameover);
+            }
+            else
+            {
+                TogglePause();
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.Escape))
@@ -102,6 +110,12 @@ public class GameBehavior : MonoBehaviour
         if (State == StateMachine.Pause && _gameoverGUI.enabled && Input.GetKeyDown(KeyCode.Space))
         {
             ResetGame();
+        }
+
+        if (Input.GetKeyUp(KeyCode.Backspace) && !_gameoverGUI.enabled)
+        {
+            LoseLife();
+            BallBehavior.Instance.ResetBall();
         }
     }
 

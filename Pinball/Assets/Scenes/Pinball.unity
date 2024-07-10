@@ -784,6 +784,7 @@ MonoBehaviour:
   _gameover: {fileID: 8300000, guid: 3317ad65487e94b318e9523ad64e2e1c, type: 3}
   _pause: {fileID: 8300000, guid: f672ff5fb053f440881c21d7bcb72c9e, type: 3}
   _newlife: {fileID: 8300000, guid: f97140828f468444e870af1c743f3c7b, type: 3}
+  _start: {fileID: 8300000, guid: 2163c48a1ba4a44d5bcd5a93b7d20f50, type: 3}
 --- !u!4 &336231762
 Transform:
   m_ObjectHideFlags: 0

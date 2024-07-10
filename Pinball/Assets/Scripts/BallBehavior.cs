@@ -26,6 +26,16 @@ public class BallBehavior : MonoBehaviour
 
     private void Awake()
     {
+        // Implement singleton pattern
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
         rb = GetComponent<Rigidbody2D>();
         _source = GetComponent<AudioSource>();
 
@@ -83,7 +93,6 @@ public class BallBehavior : MonoBehaviour
                 PlaySound(_flipperhit);
                 break;
         }
-        
     }
 
     private void OnTriggerEnter2D(Collider2D other)
