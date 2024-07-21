@@ -13,6 +13,9 @@ TagManager:
   - 500
   - Coin
   - StartWall
+  - PowerUp
+  - SlingshotWall
+  - SlingshotBumper
   layers:
   - Default
   - TransparentFX

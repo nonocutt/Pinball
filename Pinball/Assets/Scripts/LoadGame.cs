@@ -6,13 +6,22 @@ using UnityEngine.SceneManagement;
 public class LoadGame : MonoBehaviour
 {
 
-    // Update is called once per frame
+    [SerializeField] private GameObject _helpGUI;
+    
     void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Return))
+        if (!_helpGUI.activeSelf && Input.GetKeyUp(KeyCode.Return))
         {
-            // LOAD SCENE HERE
             SceneManager.LoadScene("Pinball");
         }
+        if (Input.GetKeyUp(KeyCode.H))
+        {
+            ToggleHelp();
+        }
+    }
+    
+    private void ToggleHelp()
+    {
+        _helpGUI.SetActive(!_helpGUI.activeSelf);
     }
 }

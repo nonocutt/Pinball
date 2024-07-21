@@ -19,7 +19,8 @@ public class CoinBehavior : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            GameBehavior.Instance.AddScore(50); // Assuming you have a ScoreManager
+            int score50 = BallBehavior.Instance.isDoubleScoreActive ? 100 : 50;
+            GameBehavior.Instance.AddScore(score50);
             StartCoroutine(RespawnCoin());
             DisableCoin(); // Deactivate the coin
         }

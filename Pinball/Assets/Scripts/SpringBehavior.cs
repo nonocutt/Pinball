@@ -21,27 +21,33 @@ public class SpringBehavior : MonoBehaviour
 
     void Update()
     {
-        // Check if the ball is close enough to the spring
-        if (Vector3.Distance(ball.position, initialPosition) <= activationDistance)
+        if (Input.GetKey(KeyCode.Space))
         {
-            if (Input.GetKey(KeyCode.Space))
+            isPressing = true;
+            currentStretch += stretchSpeed * Time.deltaTime;
+            if (currentStretch > maxStretch)
             {
-                isPressing = true;
-                currentStretch += stretchSpeed * Time.deltaTime;
-                if (currentStretch > maxStretch)
+                currentStretch = maxStretch;
+            }
+            spring.position = initialPosition - new Vector3(0, currentStretch, 0);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space) && isPressing)
+        {
+            isPressing = false;
+            Vector3 direction = initialPosition - spring.position;
+
+            // Check if the ball is within activation distance
+            if (ball != null && Vector3.Distance(ball.position, initialPosition) <= activationDistance)
+            {
+                Rigidbody2D ballRigidbody = ball.GetComponent<Rigidbody2D>();
+                if (ballRigidbody != null)
                 {
-                    currentStretch = maxStretch;
+                    ballRigidbody.AddForce(direction * launchForce, ForceMode2D.Impulse);
                 }
-                spring.position = initialPosition - new Vector3(0, currentStretch, 0);
             }
 
-            if (Input.GetKeyUp(KeyCode.Space) && isPressing)
-            {
-                isPressing = false;
-                Vector3 direction = initialPosition - spring.position;
-                ball.GetComponent<Rigidbody2D>().AddForce(direction * launchForce, ForceMode2D.Impulse);
-                ResetSpring();
-            }
+            ResetSpring();
         }
     }
 

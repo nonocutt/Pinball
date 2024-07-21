@@ -8,19 +8,12 @@
 - [Game Mechanics](#game-mechanics)
   - [Points](#points)
   - [Lives](#lives)
+  - [Powerups](#powerups)
 - [Contact](#contact)
 
 ## Key Command
 
-| Key    |Function                 |
-|:-------|:------------------------|
-| F      | Left flipper            |
-| J      | Right flipper           |
-| P      | Pause game              |
-| space  | Launch ball             |
-| delete | Kill ball               |
-| esc    | Back to title screen    |
-| return | Start game from title   |
+See **Help** section in game.
 
 ## Game Mechanics
 
@@ -35,7 +28,15 @@
 ### Lives
 
 - The player get 3 lives by default. _Game Over_ triggers when life reaches 0.
-  - Every **5000** points grants the player an extra life. Maximum life count is 9.
+  - Every **10000** points grants the player an extra life. Maximum life count is 9.
+
+### Powerups
+
+- There are 2 types of powerups both of them last for 10 seconds.
+  - **BigBall** makes the ball bigger and let the player impossible to lose life. Each wall hit grants the player 10 pts. The gravity becomes lighter.
+  - **DoubleScore** doubles the score increments.
+
+- When there is no powerup item in the game, it respawns after 30 seconds.
 
 ## Contact
 
