@@ -33,7 +33,7 @@ See **Help** section in game.
 ### Powerups
 
 - There are 2 types of powerups both of them last for 10 seconds.
-  - **BigBall** makes the ball bigger and let the player impossible to lose life. Each wall hit grants the player 10 pts. The gravity becomes lighter.
+  - **BigBall** makes the ball bigger and let the player hard to lose life from the gap. Each wall hit grants the player 10 pts. The gravity becomes lighter.
   - **DoubleScore** doubles the score increments.
 
 - When there is no powerup item in the game, it respawns after 30 seconds.
