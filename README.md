@@ -1,4 +1,4 @@
-# MTEC-340_Pinball
+# Pinball
 
 **Pinball** is a simple 2D pinball game developed with Unity.
 
